@@ -39,6 +39,7 @@
         </div>
 
         <form action="/login" method="POST">
+            @csrf
             <div class="p-6 pt-0 space-y-4">
                 <!-- Email Input -->
                 <div class="space-y-2">
