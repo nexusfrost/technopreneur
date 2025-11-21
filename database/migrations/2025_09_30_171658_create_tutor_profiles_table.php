@@ -14,12 +14,14 @@ return new class extends Migration
         Schema::create('tutor_profiles', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('bio');
+            $table->text('bio');
             $table->string('education');
             $table->string('teaching_experience');
             $table->integer('hourly_rate');
             $table->boolean("is_active")->default(true);
             $table->integer("rating")->default(0); // User rating
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->bigInteger('balance')->default(0);
             $table->timestamps();
         });
     }

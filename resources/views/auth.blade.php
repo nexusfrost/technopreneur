@@ -24,8 +24,8 @@
 </head>
 <body class="bg-[var(--muted)] text-[var(--foreground)]">
 
-<div class="min-h-screen flex flex-col items-center justify-center px-4">
-    <div class="rounded-lg border border-[var(--border)]/50 bg-[var(--background)] text-[var(--foreground)] shadow-lg w-full max-w-sm">
+<div class="min-h-screen flex flex-col items-center justify-center px-4 ">
+    <div class="rounded-lg border border-[var(--border)]/50 bg-[var(--background)] text-[var(--foreground)] shadow-lg w-full max-w-sm bg-white">
         <div class="flex flex-col p-6 space-y-1 text-center">
             <div class="flex justify-center">
                 <a href="/">

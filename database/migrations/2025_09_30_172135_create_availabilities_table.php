@@ -16,7 +16,7 @@ return new class extends Migration
             $table->enum('day_of_week', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']);
             $table->time('start_time');
             $table->time('end_time');
-            $table->foreignId('tutor_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('tutor_profile_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -52,5 +53,17 @@ class User extends Authenticatable
 
     public function tutorProfile(){
         return $this->hasOne('App\Models\TutorProfile', 'user_id');
+    }
+
+    public function reservations(){
+        return $this->hasMany(Reservation::class,'student_id');
+    }
+
+    public function notRated(){
+        return $this->hasMany(Reservation::class,'student_id')->where('rating_id','=',null)->where('status','=','done');
+    }
+
+    public function unpaid(){
+        return $this->hasMany(Reservation::class,'student_id')->where('status','unpaid');
     }
 }

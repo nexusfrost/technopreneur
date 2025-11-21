@@ -49,5 +49,4 @@ class UserController extends Controller
         $request->session()->regenerateToken();
         return response()->redirectTo('/landing');
     }
-
 }

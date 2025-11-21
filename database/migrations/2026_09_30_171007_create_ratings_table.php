@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId("student_id")->constrained("users")->onDelete("cascade");
             $table->integer("rating"); // Rating value (e.g., 1 to 5)
             $table->text("review")->nullable(); // Optional review text
-            $table->foreignId("tutor_id")->constrained("users")->onDelete("cascade");
+            $table->foreignId("tutor_profile_id")->constrained("users")->onDelete("cascade");
+            $table->foreignId('reservation_id')->constrained('reservations')->onDelete("cascade");
             $table->timestamps();
         });
     }
