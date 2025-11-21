@@ -41,10 +41,6 @@
 </head>
 <body class="bg-[var(--muted)] text-[var(--foreground)]">
 
-<!--
-    ADDED x-data HERE
-    We store the hourly rate to calculate the total price dynamically in the modal
--->
 <div class="min-h-screen"
      x-data="{
         bookModalOpen: false,
@@ -58,15 +54,10 @@
             Back to Browse
         </a>
 
-
-            @if (session('status'))
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md mb-6" role="alert">
-                    <p>{{ session('status') }}</p>
-                </div>
-            @endif
-
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content Column -->
             <div class="lg:col-span-2 space-y-6">
+                <!-- Profile Header Card -->
                 <div class="rounded-xl border card shadow">
                     <div class="p-6">
                         <div class="flex items-start gap-4">
@@ -79,7 +70,6 @@
                                     <div class="flex items-center gap-2">
                                         <div class="flex items-center gap-1">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-yellow-400"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                            {{-- Added number_format check --}}
                                             <span class="font-semibold">{{ isset($avgRating) ? number_format($avgRating,1) : "New" }}</span>
                                         </div>
                                         <span class="text-[var(--muted-foreground)]">({{ $ratingsCount ?? 0 }} reviews)</span>
@@ -129,6 +119,7 @@
                     </div>
                 </div>
 
+                <!-- Reviews Card -->
                 <div class="rounded-xl border card shadow">
                     <div class="p-6">
                         <h3 class="font-semibold tracking-tight text-lg">Reviews</h3>
@@ -154,17 +145,24 @@
                 </div>
             </div>
 
+            <!-- Sticky Sidebar -->
             <div class="space-y-6">
-                <div class="rounded-xl border card shadow top-6">
+                <div class="rounded-xl border card shadow sticky top-6">
                     <div class="p-6">
                         <h3 class="font-semibold tracking-tight text-lg">Book a Session</h3>
                         <p class="text-sm text-[var(--muted-foreground)]">Schedule your learning session with {{ $tutorProfile->name }}</p>
                     </div>
-                    <div class="p-6 pt-0">
-                        <!-- ADDED CLICK EVENT -->
-                        <button @click="bookModalOpen = true" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-11 px-8 w-full bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 transition-opacity">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                            Book Now
+                    <div class="p-6 pt-0 grid grid-cols-2 gap-3">
+                        <!-- MESSAGE BUTTON (Routes to /chat with Query String) -->
+                        <a href="{{ route('chat', ['user_id' => $tutorProfile->user_id]) }}" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-11 px-4 border border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                            Message
+                        </a>
+
+                        <!-- BOOK BUTTON -->
+                        <button @click="bookModalOpen = true" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-11 px-4 bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 transition-opacity">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            Book
                         </button>
                     </div>
                 </div>
@@ -210,7 +208,7 @@
         <!-- Modal Content -->
         <div class="relative w-full max-w-md bg-[var(--background)] rounded-2xl shadow-xl overflow-hidden border border-[var(--border)]">
             <div class="p-6">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex justify-between items-start mb-6">
                     <div>
                         <h2 class="text-xl font-bold tracking-tight">Book a Session</h2>
                         <p class="text-sm text-[var(--muted-foreground)]">with {{ $tutorProfile->name }}</p>

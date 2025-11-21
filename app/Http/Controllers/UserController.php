@@ -47,6 +47,6 @@ class UserController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return response()->redirectTo('/landing');
+        return response()->redirectTo('/auth');
     }
 }

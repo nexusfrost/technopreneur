@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ReservationAccepted;
+use App\Mail\ReservationRejected;
 use App\Models\Rating;
 use App\Models\Reservation;
 use App\Models\TutorProfile;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class ReservationController extends Controller
 {
@@ -65,20 +68,46 @@ class ReservationController extends Controller
     }
 
     public function accept(Reservation $reservation){
-        $reservation->update([
-            'status' => 'accepted'
-        ]);
+        // Optional: Validate that a reason was provided
 
-        return back()->with('status',"Sucessfully accepted session!");
+
+            // 1. Update the database
+            $reservation->update([
+                'status' => 'accepted'
+            ]);
+
+            // 2. Send the email with the reason
+            if ($reservation->student->email) {
+                // Pass the reason ($request->reason) to the Mailable
+                Mail::to($reservation->student->email)->send(new ReservationAccepted($reservation));
+            }
+
+            // 3. Return response
+            return back()->with('status', "Successfully accepted session and sent email!");
     }
 
-    public function reject(Reservation $reservation){
-        $reservation->update([
-            'status' => 'rejected'
-        ]);
+    public function reject(Request $request, Reservation $reservation)
+    {
+            // Optional: Validate that a reason was provided
+            $request->validate([
+                'reason' => 'required|string|max:500',
+            ]);
 
-        return back()->with('status',"Sucessfully rejected session!");
-    }
+            // 1. Update the database
+            $reservation->update([
+                'status' => 'rejected'
+            ]);
+
+            // 2. Send the email with the reason
+            if ($reservation->student->email) {
+                // Pass the reason ($request->reason) to the Mailable
+                Mail::to($reservation->student->email)->send(new ReservationRejected($reservation, $request->reason));
+            }
+
+            // 3. Return response
+            return back()->with('status', "Successfully rejected session and sent email!");
+        }
+
 
     public function cancel(Reservation $reservation){
         $reservation->update([

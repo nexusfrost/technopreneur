@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BrowseTutorController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -58,8 +59,6 @@ use App\Http\Controllers\TutorProfileController;
 // Routes for the dashboard forms, protected by auth middleware
 Route::middleware('auth')->group(function () {
 
-    // Dashboard routes
-    Route::get('/dashboard',[DashboardController::class,'index']);
 
     // Route for the "Edit Profile" modal form
     Route::post('/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
@@ -74,6 +73,8 @@ Route::middleware('auth')->group(function () {
 
 //EXPERIMENTAL
 
+    // Dashboard routes
+    Route::get('/dashboard',[DashboardController::class,'index'])->name('dashboard');
 //pages
 Route::get('/browse-tutors',[BrowseTutorController::class,'index'])->name('browse-tutors');
 Route::get('/search-tutors',[BrowseTutorController::class,'search'])->name('search-tutors');
@@ -92,9 +93,12 @@ Route::post('/store/',[ReservationController::class,'createReservation'])->name(
 
 // dashboard
 Route::post('/cashout/',[ReservationController::class,'cashout'])->name('cashout');
+Route::post('/logout/',[UserController::class,'logout'])->name('logout');
 
 // chat
-Route::get('/chat', [App\Http\Controllers\ChatController::class, 'index'])->name('chat');
+Route::get('/chat', [ChatController::class, 'index'])->name('chat');
+    Route::get('/chat/{user}', [ChatController::class, 'show']); // Get messages
+    Route::post('/chat/{user}', [ChatController::class, 'send']); // Send message
 
 
 // Add other routes like login, register etc.

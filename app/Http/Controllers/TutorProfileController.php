@@ -8,17 +8,23 @@ use Illuminate\Http\Request;
 
 class TutorProfileController extends Controller
 {
-    public function createTutorProfile(Request $request){
-        // dd($request->input());
+    public function createTutorProfile(Request $request)
+    {
+
+        // 1. Validate Profile Data AND Subjects
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'bio' => 'required|string|max:1000',
             'education' => 'required|string|max:255',
             'teaching_experience' => 'required|string|max:100',
             'hourly_rate' => 'required|integer|min:0',
+
+            // Add validation for the subjects array
+            'subjects' => 'required|array',
+            'subjects.*' => 'exists:subjects,id', // Ensures the subject IDs are valid
         ]);
 
-        // Create a new tutor profile
+        // 2. Create the Tutor Profile
         $tutorProfile = TutorProfile::create([
             'user_id' => auth()->id(),
             'name' => $request->name,
@@ -28,39 +34,36 @@ class TutorProfileController extends Controller
             'hourly_rate' => $request->hourly_rate,
         ]);
 
-        //Create availability
+        // 3. Attach the selected subjects to the profile
+        // This requires the 'subjects()' relationship to be defined in your TutorProfile model
+        if ($request->has('subjects[]')) {
+            $tutorProfile->subjects()->attach($request->subjects);
+        }
 
-        $validatedData = $request->validate([
-        // Validate the main array exists
+        // 4. Validate Availability
+        $availabilityData = $request->validate([
             'availability' => 'required|array|size:7',
-
-            // Validate each item inside the array
             'availability.*.day_of_week' => 'required|string',
-            'availability.*.enabled' => 'nullable|string', // It's either 'on' or null
-
-            // Start time is required ONLY IF 'enabled' is present
+            'availability.*.enabled' => 'nullable|string',
             'availability.*.start_time' => 'nullable|required_with:availability.*.enabled|date_format:H:i',
-
-            // End time is also required and must be after the start time
             'availability.*.end_time' => 'nullable|required_with:availability.*.enabled|date_format:H:i|after:availability.*.start_time',
         ]);
 
-        // Loop through the *validated* data
-        foreach ($validatedData['availability'] as $dayData) {
-
-            if (isset($dayData['enabled'])) {
+        // 5. Create Availability
+        foreach ($availabilityData['availability'] as $dayData) {
+            // Only create if 'enabled' is not empty/null
+            if (isset($dayData['enabled']) && $dayData['enabled'] == 'on') {
                 Availability::create([
-                    'tutor_profile_id' => auth()->user()->tutorProfile->id,
+                    'tutor_profile_id' => $tutorProfile->id,
                     'day_of_week' => $dayData['day_of_week'],
                     'start_time' => $dayData['start_time'],
                     'end_time' => $dayData['end_time'],
                 ]);
             }
+
         }
 
-        // Return a success response
-        return redirect()->back()->with("Sucessfully Registered Tutor Profile");
-
+        return redirect()->back()->with("status", "Successfully Registered Tutor Profile");
     }
 
     public function updateTutorProfile(Request $request)

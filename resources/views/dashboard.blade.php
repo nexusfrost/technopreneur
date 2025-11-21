@@ -58,15 +58,18 @@
              tutorEditOpen: false,
              tutorFormOpen: false,
              activeTab: 'bookings',
-             sessionModalOpen: false,   <!-- ADD THIS -->,
-             finalPaymentModalOpen: false,  <!-- ADD THIS LINE -->,
+             sessionModalOpen: false,
+             finalPaymentModalOpen: false,
              activeTab: 'bookings',
              currentSession: { id: '', link: '', name: '' } ,
-             paymentModalOpen: false,   {{-- ADD THIS LINE --}}
+             paymentModalOpen: false,
              currentPayment: { id: '', amount: 0, total: 0 },
              ratingModalOpen: {{ isset($pendingRatingSession) && $pendingRatingSession ? 'true' : 'false' }},
              ratingScore: 0,
-             ratingHover: 0
+             ratingHover: 0,
+             rejectModalOpen: false,
+             currentRejection: { id: '', name: '' },
+
 
 
          }"
@@ -118,13 +121,27 @@
                         Browse Tutors
                     </a>
 
+
+
                     @if (!$tutorProfile)
                         <button @click="tutorFormOpen = true" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 h-10 px-4 py-2 transition-colors">
                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
                             Become a Tutor
                         </button>
                     @endif
-                </div>
+
+                    <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 transition-colors bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Log Out
+                    </button>
+                </form>
+                                </div>
             </div>
 
             <!-- Tabs -->
@@ -451,14 +468,17 @@
                                                     </button>
 
                                                 </form>
-                                                <form action="{{ route('reject',$booking) }}" method="post">
-                                                    @csrf
-                                                    @method('patch')
-                                                    <button type='submit'  class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-red-600 text-[var(--primary-foreground)] hover:opacity-90 h-9 px-3 transition-colors">
-                                                        Reject
-                                                    </button>
-
-                                                </form>
+                                                <button type="button"
+                                                    @click="
+                                                        rejectModalOpen = true;
+                                                        currentRejection = {
+                                                            id: '{{ $booking->id }}',
+                                                            name: @js($booking->student->name ?? 'Student')
+                                                        }
+                                                    "
+                                                    class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700 h-9 px-3 transition-colors">
+                                                    Reject
+                                                </button>
 
                                             @elseif($booking->status == 'accepted')
                                                 <button
@@ -1062,7 +1082,7 @@
                                                 @foreach($category->subjects as $subject)
                                                     <div>
                                                         <label class="cursor-pointer">
-                                                            <input type="checkbox" name="subjects[]" value="{{ $subject->id }}" class="hidden peer" {{ in_array($subject->id, old('subjects', [])) ? 'checked' : '' }}>
+                                                            <input type="checkbox" name="subjects[]" value="{{ $subject->id }}" class="hidden peer" {{ in_array($subject->id, $subjects) ? 'checked' : '' }}>
 
                                                             {{-- 4. Print the subject's name --}}
                                                             <span class="block text-center p-3 border border-[var(--border)] rounded-lg transition-colors hover:bg-[var(--muted)] peer-checked:bg-[var(--primary)] peer-checked:text-[var(--primary-foreground)] peer-checked:border-[var(--primary)]">{{ $subject->name }}</span>
@@ -1215,6 +1235,77 @@
     </div>
 </div>
 @endif
+
+<!-- "Reject Session" MODAL -->
+<div x-show="rejectModalOpen"
+     x-transition:enter="ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-6 md:p-10"
+     style="display: none;">
+
+    <!-- Backdrop -->
+    <div @click="rejectModalOpen = false" class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+    <!-- Modal Content -->
+    <div x-show="rejectModalOpen"
+         @click.stop
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="relative w-full max-w-md bg-[var(--muted)] rounded-2xl shadow-xl overflow-hidden border border-[var(--border)]">
+
+        <!-- Close Button -->
+        <button @click="rejectModalOpen = false" class="absolute top-4 right-4 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+
+        <div class="p-8">
+            <div class="mb-6 text-center">
+                <!-- Warning Icon -->
+                <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 border border-red-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-600"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                </div>
+
+                <h1 class="text-2xl font-bold tracking-tight mb-2">Reject Session</h1>
+                <p class="text-[var(--muted-foreground)] text-sm">
+                    Are you sure you want to reject the session with <span class="font-semibold text-[var(--foreground)]" x-text="currentRejection.name"></span>?
+                </p>
+            </div>
+
+            <!-- Rejection Form -->
+            <form :action="'/reject/' + currentRejection.id" method="POST" class="space-y-6">
+                @csrf
+                @method('PATCH')
+
+                <div>
+                    <label for="rejection_reason" class="text-xs text-[var(--muted-foreground)] uppercase tracking-wide font-semibold block mb-2">Reason for Rejection</label>
+                    <textarea id="rejection_reason"
+                              name="reason"
+                              required
+                              placeholder="Please briefly explain why (e.g., Schedule conflict)..."
+                              class="flex min-h-[100px] w-full rounded-md border input-field px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 placeholder:text-[var(--muted-foreground)]/50"></textarea>
+                </div>
+
+                <div class="flex flex-col-reverse sm:flex-row gap-3">
+                    <button type="button" @click="rejectModalOpen = false" class="flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium border border-[var(--border)] h-10 px-4 py-2 bg-transparent hover:bg-[var(--background)] transition-colors">
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm">
+                        Confirm Rejection
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

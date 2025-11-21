@@ -29,8 +29,8 @@ class DashboardController extends Controller
             $tutorBookings = $tutor->reservations()->where('status','=','done')->count();
             $tutorRatings = $tutor->ratings();
             $tutorReservations = $tutor->reservations()->get();
-
-            return view('dashboard', compact('categories','tutorReservations','pendingRatingSession','reservations','tutorBookings','totalEarnings','tutorRatings'));
+            $subjects = $tutor->subjects->pluck('id')->toArray();
+            return view('dashboard', compact('categories','subjects','tutorReservations','pendingRatingSession','reservations','tutorBookings','totalEarnings','tutorRatings'));
 
         }else{
             $pendingRatingSession = auth()->user()->notRated()->first();
